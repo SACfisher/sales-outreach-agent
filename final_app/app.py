@@ -252,11 +252,50 @@ if not api_key:
     st.error("No GROQ_API_KEY found. Add it to your .env file or Streamlit Secrets.")
     st.stop()
 
-if not sender_email or not sender_pass:
-    st.warning(
-        "Email sending is disabled. "
-        "Add SENDER_EMAIL and SENDER_APP_PASSWORD to your .env file to enable it."
+# ============================================================
+# SIDEBAR: User Email Configuration
+#
+# Each user enters their OWN Gmail credentials here.
+# These are stored only in their browser session (st.session_state)
+# and are NEVER saved to the server or database.
+#
+# This means every user sends emails from their own Gmail account —
+# not from the developer's account. This is how a real product works.
+# ============================================================
+
+with st.sidebar:
+    st.header("Email Configuration")
+    st.write("Enter your own Gmail credentials to send emails from your account.")
+
+    user_sender_email = st.text_input(
+        "Your Gmail Address",
+        placeholder="yourname@gmail.com",
+        value=sender_email or "",
+        help="The Gmail account emails will be sent FROM."
     )
+    user_sender_pass = st.text_input(
+        "Gmail App Password",
+        type="password",
+        placeholder="xxxx xxxx xxxx xxxx",
+        value=sender_pass or "",
+        help="Get this from myaccount.google.com → Search 'App passwords'"
+    )
+
+    if user_sender_email and user_sender_pass:
+        st.success("Email sending is ready!")
+    else:
+        st.warning("Add your credentials above to enable email sending.")
+
+    st.divider()
+    st.caption(
+        "Your credentials are only stored for this session. "
+        "They are never saved to any server or database."
+    )
+
+# Use the sidebar values (user-entered) instead of hardcoded .env values
+# This allows every user to send from their own email account
+active_sender_email = user_sender_email or sender_email
+active_sender_pass  = user_sender_pass  or sender_pass
 
 # ============================================================
 # EMAIL SENDING FUNCTION
@@ -266,15 +305,14 @@ if not sender_email or not sender_pass:
 
 def send_email(to_address: str, subject: str, body: str) -> tuple[bool, str]:
     """
-    Sends an email via Gmail SMTP.
+    Sends an email via Gmail SMTP using the active user's credentials.
     Returns (success: bool, message: str).
     """
-    if not sender_email or not sender_pass:
-        return False, "Sender credentials not configured in .env"
+    if not active_sender_email or not active_sender_pass:
+        return False, "No email credentials configured. Add them in the sidebar."
     try:
-        # Build the email message
         msg = MIMEMultipart()
-        msg["From"]    = sender_email
+        msg["From"]    = active_sender_email
         msg["To"]      = to_address
         msg["Subject"] = subject
         msg.attach(MIMEText(body, "plain"))
@@ -283,18 +321,18 @@ def send_email(to_address: str, subject: str, body: str) -> tuple[bool, str]:
         # Falls back to port 587 (STARTTLS) if 465 fails.
         try:
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                server.login(sender_email, sender_pass)
-                server.sendmail(sender_email, to_address, msg.as_string())
+                server.login(active_sender_email, active_sender_pass)
+                server.sendmail(active_sender_email, to_address, msg.as_string())
         except Exception:
             with smtplib.SMTP("smtp.gmail.com", 587) as server:
                 server.ehlo()
                 server.starttls()
-                server.login(sender_email, sender_pass)
-                server.sendmail(sender_email, to_address, msg.as_string())
+                server.login(active_sender_email, active_sender_pass)
+                server.sendmail(active_sender_email, to_address, msg.as_string())
 
         return True, f"Email successfully sent to {to_address}!"
     except smtplib.SMTPAuthenticationError:
-        return False, "Authentication failed. Check your App Password in .env."
+        return False, "Authentication failed. Check your Gmail App Password in the sidebar."
     except Exception as e:
         return False, f"Failed to send email: {str(e)}"
 
