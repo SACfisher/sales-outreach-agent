@@ -287,6 +287,46 @@ with st.sidebar:
         st.warning("Add your credentials above to enable email sending.")
 
     st.divider()
+
+    with st.expander("How to get a Gmail App Password"):
+        st.markdown("""
+**What is an App Password?**
+It's a special 16-character password that lets apps (like this one)
+send emails from your Gmail safely — without using your real password.
+
+---
+
+**Step 1 — Enable 2-Step Verification**
+1. Go to [myaccount.google.com](https://myaccount.google.com)
+2. Click **Security** in the left menu
+3. Under "How you sign in to Google", click **2-Step Verification**
+4. Follow the steps to turn it on
+
+> You must complete this before App Passwords become available.
+
+---
+
+**Step 2 — Create the App Password**
+1. Go back to [myaccount.google.com](https://myaccount.google.com)
+2. In the search bar at the top, type **App passwords**
+3. Click the **App passwords** result
+4. Under "App name", type: `Sales Agent`
+5. Click **Create**
+6. Google will show you a **16-character password** like:
+   `abcd efgh ijkl mnop`
+7. Copy it immediately — it will only be shown once
+
+---
+
+**Step 3 — Paste it above**
+Paste the 16-character password into the
+**Gmail App Password** field above (spaces are fine to include).
+
+---
+> **Your password is never stored on our server.**
+> It only lives in your browser for this session.
+""")
+
     st.caption(
         "Your credentials are only stored for this session. "
         "They are never saved to any server or database."
