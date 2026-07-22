@@ -1,0 +1,17 @@
+# === SECURITY: Never upload the API key to GitHub ===
+.env
+
+# Python virtual environment (too large to upload, 150+ MB)
+venv/
+
+# Python cache files (auto-generated, not needed)
+__pycache__/
+*.pyc
+*.pyo
+
+# VS Code settings
+.vscode/
+
+# Generated draft files (optional — remove this line if you want drafts in GitHub)
+email_sender/drafts/
+multi_agent/__pycache__/
